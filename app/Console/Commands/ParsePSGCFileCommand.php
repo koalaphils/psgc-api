@@ -45,6 +45,10 @@ class ParsePSGCFileCommand extends Command
             ->getRows();
 
         $rows->each(function (array $properties) {
+            //skip rows with no code or no geographic level, they are only used as marker/label on sheet
+            if (empty($properties['10-digit PSGC']) || empty($properties['Geographic Level'])) {
+                return;
+            }
             $data = [
                 'code' => $properties['10-digit PSGC'],
                 'name' => $properties['Name'],
@@ -128,7 +132,8 @@ class ParsePSGCFileCommand extends Command
     {
         $geographic = Province::orderBy('id', 'desc')->first();
 
-        if (in_array($data['code'], ['137606000'])) {
+        //137606000, 1381701000 Pateros
+        if (in_array($data['code'], ['137606000', '1381701000'])) {
             $geographic = District::orderBy('id', 'desc')->first();
         }
 
