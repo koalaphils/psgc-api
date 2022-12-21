@@ -41,18 +41,18 @@ class ParsePSGCFileCommand extends Command
         $filePath = storage_path('PSGC-3Q-2022-Publication-Datafile.xlsx');
 
         $rows = SimpleExcelReader::create($filePath)
-            ->fromSheet('PSGC')
+            ->fromSheetName('PSGC')
             ->getRows();
 
         $rows->each(function (array $properties) {
             $data = [
-                'code'         => $properties['10-digit PSGC'],
-                'name'         => $properties['Name'],
-                'level'        => $properties['Geographic Level'],
-                'city_class'   => $properties['City Class'],
+                'code' => $properties['10-digit PSGC'],
+                'name' => $properties['Name'],
+                'level' => $properties['Geographic Level'],
+                'city_class' => $properties['City Class'],
                 'income_class' => $properties["Income\nClassification"],
-                'urban_rural'  => $properties["Urban / Rural\n(based on 2020 CPH)"],
-                'population'   => preg_replace('/\D+/', '', $properties["2020 Population"]),
+                'urban_rural' => $properties["Urban / Rural\n(based on 2020 CPH)"],
+                'population' => preg_replace('/\D+/', '', $properties["2020 Population"]),
             ];
 
             $data = array_filter($data);
@@ -92,15 +92,21 @@ class ParsePSGCFileCommand extends Command
 
     private function processCity($data)
     {
-        $region   = Region::orderBy('id', 'desc')->first();
+        $region = Region::orderBy('id', 'desc')->first();
         $province = Province::orderBy('id', 'desc')->first();
         $district = District::orderBy('id', 'desc')->first();
 
         $geographic = optional($district)->created_at > optional($province)->created_at ? $district : $province;
 
-        // 099701000 &x 129804000
-        if (in_array($data['code'], ['099701000', '129804000'])) {
+        // 099701000, 0990101000 - City of Isabela
+        // 129804000, 1908703000 - City of Cotabato
+        if (in_array($data['code'], ['099701000', '129804000', '0990101000', '1908703000'])) {
             $geographic = $region;
+        }
+
+        //if city classification is empty on the sheet, default to CC
+        if (empty($data['city_class'])) {
+            $data['city_class'] = 'CC';
         }
 
         $data['geographic_type'] = get_class($geographic);
