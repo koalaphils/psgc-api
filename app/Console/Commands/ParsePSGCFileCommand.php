@@ -46,11 +46,11 @@ class ParsePSGCFileCommand extends Command
 
         $rows->each(function (array $properties) {
             //skip rows with no code or no geographic level, they are only used as marker/label on sheet
-            if (empty($properties['10-digit PSGC']) || empty($properties['Geographic Level'])) {
+            if (empty($properties['Correspondence Code']) || empty($properties['Geographic Level'])) {
                 return;
             }
             $data = [
-                'code' => $properties['10-digit PSGC'],
+                'code' => $properties['Correspondence Code'],
                 'name' => $properties['Name'],
                 'level' => $properties['Geographic Level'],
                 'city_class' => $properties['City Class'],
