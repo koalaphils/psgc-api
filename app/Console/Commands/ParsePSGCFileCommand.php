@@ -38,18 +38,20 @@ class ParsePSGCFileCommand extends Command
     public function handle()
     {
         // source: https://psa.gov.ph/classification/psgc/
-        $filePath = storage_path('psgc-jun2021.csv');
+        $filePath = storage_path('PSGC-3Q-2022-Publication-Datafile.xlsx');
 
-        $rows = SimpleExcelReader::create($filePath)->getRows();
+        $rows = SimpleExcelReader::create($filePath)
+            ->fromSheet('PSGC')
+            ->getRows();
 
         $rows->each(function (array $properties) {
             $data = [
-                'code'         => $properties['Code'],
+                'code'         => $properties['10-digit PSGC'],
                 'name'         => $properties['Name'],
                 'level'        => $properties['Geographic Level'],
                 'city_class'   => $properties['City Class'],
                 'income_class' => $properties["Income\nClassification"],
-                'urban_rural'  => $properties["Urban / Rural\n(based on 2015 Population)"],
+                'urban_rural'  => $properties["Urban / Rural\n(based on 2020 CPH)"],
                 'population'   => preg_replace('/\D+/', '', $properties["2020 Population"]),
             ];
 
